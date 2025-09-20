@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Dial Phone Filter Fix</title>
+</head>
+<body>
+    <h1>Test Dial Phone Filter Fix</h1>
+    <p>This page tests if the Dial page is now correctly showing constituents with phone numbers.</p>
+    
+    <h2>What Was Fixed:</h2>
+    <ul>
+        <li>✅ Changed filtering logic to check original data first, then parse</li>
+        <li>✅ Added multiple phone field name checks ('Phone Main', 'Phone 2', 'Phone 3', etc.)</li>
+        <li>✅ Added debug information to see actual counts</li>
+        <li>✅ Added console logging to track the filtering process</li>
+    </ul>
+    
+    <h2>Previous Issue:</h2>
+    <p>The Dial page was showing "0 of 246 constituents with phone numbers" because the phone number filtering was happening after parsing, and the parsing might not have been working correctly with the updated data structure.</p>
+    
+    <h2>Solution:</h2>
+    <p>Now the filtering happens on the original data first to find people with phone numbers, then those voters are parsed. This ensures we don't lose people due to parsing issues.</p>
+    
+    <h2>Test Steps:</h2>
+    <ol>
+        <li>Go to the main app and log in as South Amherst</li>
+        <li>Go to the Dial tab</li>
+        <li>Check the debug info at the bottom - it should show the correct counts</li>
+        <li>You should see cards for people with phone numbers</li>
+        <li>Check the browser console for the logging output</li>
+    </ol>
+    
+    <h2>Expected Results:</h2>
+    <ul>
+        <li>✅ Should show actual number of constituents with phone numbers (not 0)</li>
+        <li>✅ Debug info should show correct counts</li>
+        <li>✅ Console should show "Total voters: X, Voters with phones: Y"</li>
+        <li>✅ Cards should display with phone numbers</li>
+    </ul>
+    
+    <h2>Debug Information:</h2>
+    <p>The page now shows debug information at the bottom that displays:</p>
+    <ul>
+        <li>Total voters count</li>
+        <li>Count of voters with phone numbers</li>
+        <li>Console logs with detailed filtering information</li>
+    </ul>
+</body>
+</html>
+
+

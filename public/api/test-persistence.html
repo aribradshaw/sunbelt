@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Persistence Fix</title>
+</head>
+<body>
+    <h1>Test Persistence Fix</h1>
+    <p>This page tests if the checkmark persistence issue has been fixed.</p>
+    
+    <h2>Test Steps:</h2>
+    <ol>
+        <li>Go to the main app and log in as South Amherst</li>
+        <li>Go to the Constituents page</li>
+        <li>Find "Ariana Savage" and checkmark her "Voter Confirmed" checkbox</li>
+        <li>Go to the Dial tab - you should see her checkmarked there too</li>
+        <li>Go back to the Constituents tab - her checkmark should still be there</li>
+        <li>Refresh the page - the checkmark should persist</li>
+    </ol>
+    
+    <h2>What Was Fixed:</h2>
+    <ul>
+        <li>✅ Added data reloading when switching between Constituents and Dial pages</li>
+        <li>✅ Added data reloading after successful CSV updates</li>
+        <li>✅ Fixed voter ID matching between frontend and backend</li>
+        <li>✅ Added proper state synchronization between pages</li>
+    </ul>
+    
+    <h2>Expected Results:</h2>
+    <ul>
+        <li>✅ Checkmarks should persist when switching between pages</li>
+        <li>✅ Checkmarks should persist after page refresh</li>
+        <li>✅ Checkmarks should be visible on both Constituents and Dial pages</li>
+        <li>✅ Changes should be saved to the CSV file on the server</li>
+    </ul>
+    
+    <button onclick="testAPI()">Test API Connection</button>
+    <div id="result"></div>
+
+    <script>
+        async function testAPI() {
+            try {
+                const response = await fetch('/api/update-voter.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        voterId: 'ariana-savage-123-main-st',
+                        field: 'Voter Status',
+                        value: 'X',
+                        portal: 'SouthAmherst'
+                    })
+                });
+                
+                const result = await response.json();
+                document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
+
+

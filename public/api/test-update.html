@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Voter Update API</title>
+</head>
+<body>
+    <h1>Test Voter Update API</h1>
+    <button onclick="testUpdate()">Test Update</button>
+    <div id="result"></div>
+
+    <script>
+        async function testUpdate() {
+            try {
+                const response = await fetch('/api/update-voter.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        voterId: 'richard-cremeans-335-annis-rd',
+                        field: 'Voter Status',
+                        value: 'X',
+                        portal: 'SouthAmherst'
+                    })
+                });
+                
+                const result = await response.json();
+                document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
+
+

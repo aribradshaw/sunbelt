@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Constituents Persistence</title>
+</head>
+<body>
+    <h1>Test Constituents Persistence</h1>
+    <p>This page tests if the Constituents page checkmarks persist to the CSV file.</p>
+    
+    <h2>Test Steps:</h2>
+    <ol>
+        <li>Go to the main app and log in as South Amherst</li>
+        <li>Go to the Constituents page</li>
+        <li>Click some "Voter Confirmed" checkboxes</li>
+        <li>Click some action checkboxes in the dropdown (Knocked Door, Voter Called, etc.)</li>
+        <li>Check the CSV file to see if the changes were saved</li>
+    </ol>
+    
+    <h2>Expected Results:</h2>
+    <ul>
+        <li>✅ Checkmarks should appear immediately in the UI</li>
+        <li>✅ Changes should be saved to the CSV file on the server</li>
+        <li>✅ Changes should persist across browser refreshes</li>
+        <li>✅ Changes should be visible on the Dial page</li>
+        <li>✅ Changes should work from any device/location</li>
+    </ul>
+    
+    <h2>CSV File Location:</h2>
+    <p><code>public/voters/csv/SAMHERSTchristians.csv</code></p>
+    
+    <h2>API Endpoint:</h2>
+    <p><code>/api/update-voter.php</code></p>
+    
+    <button onclick="testAPI()">Test API Connection</button>
+    <div id="result"></div>
+
+    <script>
+        async function testAPI() {
+            try {
+                const response = await fetch('/api/update-voter.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        voterId: 'richard-cremeans-335-annis-rd',
+                        field: 'Voter Status',
+                        value: 'X',
+                        portal: 'SouthAmherst'
+                    })
+                });
+                
+                const result = await response.json();
+                document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
+
+
