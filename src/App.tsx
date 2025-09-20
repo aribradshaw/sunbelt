@@ -191,7 +191,7 @@ function App() {
 
 
   // Function to convert voters back to CSV format
-  const convertVotersToCSV = (voters: any[]) => {
+  const _convertVotersToCSV = (voters: any[]) => {
     if (voters.length === 0) return '';
     
     // Get headers from the first voter
