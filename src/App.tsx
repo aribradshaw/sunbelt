@@ -191,7 +191,7 @@ function App() {
 
 
   // Function to convert voters back to CSV format
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // @ts-ignore - intentionally unused function for future use
   const _convertVotersToCSV = (voters: any[]) => {
     if (voters.length === 0) return '';
     
