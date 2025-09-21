@@ -2,37 +2,56 @@
 CREATE DATABASE IF NOT EXISTS redsaber_sunbelt_voters;
 USE redsaber_sunbelt_voters;
 
--- Voters table
+-- Voters table - dynamic structure to handle CSV columns
 CREATE TABLE IF NOT EXISTS voters (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
-    phone_main VARCHAR(20),
-    phone_type ENUM('L', 'C') DEFAULT 'L',
-    phone_2 VARCHAR(20),
-    phone_3 VARCHAR(20),
-    street_address VARCHAR(255),
-    apt VARCHAR(50),
-    city VARCHAR(100),
-    county VARCHAR(100),
-    state VARCHAR(10),
-    zip_code VARCHAR(10),
-    religion VARCHAR(100),
-    
-    -- Campaign tracking fields
-    voter_status ENUM('Confirmed', 'Unconfirmed', 'Not Voter') DEFAULT 'Unconfirmed',
-    voter_texted BOOLEAN DEFAULT FALSE,
-    voter_mailed BOOLEAN DEFAULT FALSE,
-    knocked_door BOOLEAN DEFAULT FALSE,
-    voter_called BOOLEAN DEFAULT FALSE,
-    left_pamphlet BOOLEAN DEFAULT FALSE,
+    -- SAMHERST.csv columns (all as VARCHAR to handle dynamic data)
+    LASTN VARCHAR(100),
+    FIRSTN VARCHAR(100),
+    MIDDLEN VARCHAR(100),
+    PREFIXN VARCHAR(100),
+    SUFFIXN VARCHAR(100),
+    STNUM VARCHAR(20),
+    STDIR VARCHAR(10),
+    STNAME VARCHAR(255),
+    APT VARCHAR(50),
+    CITY VARCHAR(100),
+    ZIP VARCHAR(10),
+    MADDR1 VARCHAR(255),
+    MADDR2 VARCHAR(255),
+    MCITY VARCHAR(100),
+    MSTATE VARCHAR(10),
+    MZIP VARCHAR(10),
+    REGDATE VARCHAR(50),
+    BIRTHYEAR VARCHAR(10),
+    PARTYAFFIL VARCHAR(50),
+    LASTVOTE VARCHAR(50),
+    `2025 MAY` VARCHAR(10),
+    `2024` VARCHAR(10),
+    `2023` VARCHAR(10),
+    `2022` VARCHAR(10),
+    `2021` VARCHAR(10),
+    `2020` VARCHAR(10),
+    `2019` VARCHAR(10),
+    `2018` VARCHAR(10),
+    `2017` VARCHAR(10),
+    `2016` VARCHAR(10),
+    `2015` VARCHAR(10),
+    `2014` VARCHAR(10),
+    `2013` VARCHAR(10),
+    `2012` VARCHAR(10),
+    `2011` VARCHAR(10),
+    `2010` VARCHAR(10),
+    `Knocked Door` VARCHAR(10),
+    `Voter Status` VARCHAR(50),
+    `Voter Called` VARCHAR(10),
+    `Voter Texted` VARCHAR(10),
+    `Left Pamphlet` VARCHAR(10),
+    `Voter Mailed` VARCHAR(10),
     
     -- Timestamps
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    -- Unique constraint to prevent duplicates
-    UNIQUE KEY unique_voter (first_name, last_name, street_address)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Indexes for better performance

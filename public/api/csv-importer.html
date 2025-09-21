@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSV Importer for Sunbelt</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .upload-area { border: 2px dashed #ccc; padding: 20px; text-align: center; margin: 20px 0; }
+        .upload-area.dragover { border-color: #007cba; background-color: #f0f8ff; }
+        button { background: #007cba; color: white; padding: 10px 20px; border: none; cursor: pointer; margin: 5px; }
+        button:hover { background: #005a87; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .preview { margin: 20px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .progress { width: 100%; background-color: #f0f0f0; margin: 10px 0; }
+        .progress-bar { height: 20px; background-color: #4CAF50; text-align: center; line-height: 20px; color: white; }
+    </style>
+</head>
+<body>
+    <h1>CSV Importer for Sunbelt Voters</h1>
+    
+    <div class="upload-area" id="uploadArea">
+        <p>Drag and drop your CSV file here, or click to select</p>
+        <input type="file" id="fileInput" accept=".csv" style="display: none;">
+    </div>
+    
+    <div id="preview" class="preview" style="display: none;">
+        <h3>CSV Preview (First 5 rows):</h3>
+        <table id="previewTable"></table>
+        <p>Total rows: <span id="rowCount"></span></p>
+        <button id="importBtn">Import to Database</button>
+    </div>
+    
+    <div id="progress" style="display: none;">
+        <h3>Import Progress:</h3>
+        <div class="progress">
+            <div class="progress-bar" id="progressBar" style="width: 0%;">0%</div>
+        </div>
+        <p id="statusText">Starting import...</p>
+    </div>
+    
+    <div id="result"></div>
+
+    <script>
+        let csvData = [];
+        let headers = [];
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('preview');
+        const previewTable = document.getElementById('previewTable');
+        const rowCount = document.getElementById('rowCount');
+        const importBtn = document.getElementById('importBtn');
+        const progress = document.getElementById('progress');
+        const progressBar = document.getElementById('progressBar');
+        const statusText = document.getElementById('statusText');
+        const result = document.getElementById('result');
+
+        // File upload handling
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                alert('Please select a CSV file');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const csv = e.target.result;
+                parseCSV(csv);
+            };
+            reader.readAsText(file);
+        }
+
+        function parseCSV(csv) {
+            const lines = csv.split('\n').filter(line => line.trim());
+            if (lines.length === 0) {
+                alert('CSV file is empty');
+                return;
+            }
+
+            headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            csvData = lines.slice(1).map(line => {
+                const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || '';
+                });
+                return row;
+            });
+
+            showPreview();
+        }
+
+        function showPreview() {
+            // Show first 5 rows
+            let tableHTML = '<tr>';
+            headers.forEach(header => {
+                tableHTML += `<th>${header}</th>`;
+            });
+            tableHTML += '</tr>';
+
+            csvData.slice(0, 5).forEach(row => {
+                tableHTML += '<tr>';
+                headers.forEach(header => {
+                    tableHTML += `<td>${row[header]}</td>`;
+                });
+                tableHTML += '</tr>';
+            });
+
+            previewTable.innerHTML = tableHTML;
+            rowCount.textContent = csvData.length;
+            preview.style.display = 'block';
+        }
+
+        importBtn.addEventListener('click', () => {
+            importToDatabase();
+        });
+
+        async function importToDatabase() {
+            importBtn.disabled = true;
+            progress.style.display = 'block';
+            result.innerHTML = '';
+
+            try {
+                // First, clear existing data
+                statusText.textContent = 'Clearing existing data...';
+                await fetch('/app/api/clear-voters.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ portal: 'SouthAmherst' })
+                });
+
+                // Import data in batches
+                const batchSize = 50;
+                const totalBatches = Math.ceil(csvData.length / batchSize);
+
+                for (let i = 0; i < totalBatches; i++) {
+                    const start = i * batchSize;
+                    const end = Math.min(start + batchSize, csvData.length);
+                    const batch = csvData.slice(start, end);
+
+                    statusText.textContent = `Importing batch ${i + 1} of ${totalBatches} (rows ${start + 1}-${end})...`;
+                    
+                    await fetch('/app/api/import-batch.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            portal: 'SouthAmherst',
+                            headers: headers,
+                            data: batch
+                        })
+                    });
+
+                    const progressPercent = Math.round(((i + 1) / totalBatches) * 100);
+                    progressBar.style.width = progressPercent + '%';
+                    progressBar.textContent = progressPercent + '%';
+                }
+
+                statusText.textContent = 'Import completed successfully!';
+                result.innerHTML = `<div class="success">Successfully imported ${csvData.length} voters to the database.</div>`;
+
+            } catch (error) {
+                console.error('Import error:', error);
+                result.innerHTML = `<div class="error">Import failed: ${error.message}</div>`;
+            } finally {
+                importBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
