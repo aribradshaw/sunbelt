@@ -157,7 +157,7 @@ function App() {
       
       // Save to server via PHP API
       try {
-        const response = await fetch('/api/update-voter.php', {
+        const response = await fetch(`${import.meta.env.BASE_URL}api/update-voter-db.php`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -398,8 +398,21 @@ function App() {
     if (!user) return;
     const selected = constituencies[selectedIndex];
     if (user.portal === 'SouthAmherst' && selected.group === 'OHIO DISTRICTS' && selected.name === 'South Amherst Village') {
-      const loadSamherstCsv = async () => {
+      const loadSamherstData = async () => {
         try {
+          // Try to load from database first
+          const dbResponse = await fetch(`${import.meta.env.BASE_URL}api/get-voters-db.php?portal=SouthAmherst&limit=1000`);
+          if (dbResponse.ok) {
+            const dbData = await dbResponse.json();
+            if (dbData.success && dbData.voters && dbData.voters.length > 0) {
+              console.log(`[South Amherst Loader] Loaded ${dbData.voters.length} voters from database`);
+              setSamherstVoters(dbData.voters);
+              return;
+            }
+          }
+          
+          // Fallback to CSV if database fails
+          console.log('[South Amherst Loader] Database not available, falling back to CSV');
           const csvUrl = import.meta.env.BASE_URL + 'voters/csv/SAMHERST.csv';
           const res = await fetch(csvUrl);
           if (!res.ok) throw new Error('CSV file not found');
@@ -422,7 +435,7 @@ function App() {
             return voter;
           }).filter(voter => voter && Object.keys(voter).length > 0);
           
-          console.log(`[South Amherst Loader] Loaded ${voters.length} voters from CSV`);
+          console.log(`[South Amherst Loader] Loaded ${voters.length} voters from CSV fallback`);
           
           // Match with Christians data if available
           if (samherstChristians && samherstChristians.length > 0) {
@@ -433,11 +446,11 @@ function App() {
             setSamherstVoters(voters);
           }
         } catch (e) {
-          console.error('[South Amherst Loader] Error loading CSV:', e);
+          console.error('[South Amherst Loader] Error loading data:', e);
           setSamherstVoters([]);
         }
       };
-      loadSamherstCsv();
+      loadSamherstData();
     } else {
       setSamherstVoters(null);
     }
